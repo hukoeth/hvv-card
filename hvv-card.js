@@ -84,8 +84,11 @@ class HvvCard extends LitElement {
                     const type = attr['type'];
                     const delay = attr['delay'];
                     const departure = new Date(attr["departure"]);
-                    const diffMs = (departure - today);
-                    const departureInMins = Math.round(((diffMs % 86400000) % 3600000) / 60000);
+					const dept_ms = departure - today;
+					const dept_s = dept_ms / 1000;
+					const dept_h = Math.floor(dept_s / 3600);
+					const dept_m = Math.round((dept_s % 3600) / 60);
+                    const departureInMins = dept_h + " h " + dept_m + " m";
 
                     count++;
 
@@ -94,12 +97,33 @@ class HvvCard extends LitElement {
                         <tr>
                             <td class="narrow" style="text-align:center;"><span class="line ${type} ${line}">${line}</span></td>
                             <td class="expand">${direction}</td>
-                            <td class="narrow" style="text-align:right;">
-                                ${departureInMins}
-                                ${delay > 0 ?
-                                    html`<span class="delay">+${delay}</span> min` :
-                                    html` min`}
-                            </td>
+                                ${
+									switch (this._config.show) {
+										case "time":
+											html`<td class="narrow" style="text-align:right;">`;
+											departure.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+											delay > 0 ?
+												html`<span class="delay">+${delay}</span> min` :
+												html``;
+											html`</td>`;
+											break;
+										case "difference":
+											html `<td class="narrow" style="text-align:right;">${departureInMins}`
+											delay > 0 ?
+												html`<span class="delay">+${delay}</span> min` :
+												html``;
+											html`</td>`;
+											break;
+										case "both":
+											html`<td class="narrow" style="text-align:right;">`;
+											departure.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+											delay > 0 ?
+												html`<span class="delay">+${delay}</span> min` :
+												html``;
+											html `</td>`;
+											html `<td class="narrow" style="text-align:right;">${departureInMins}</td>`;
+											break;
+                                }
                         </tr>
                         `
                     : html ``;
