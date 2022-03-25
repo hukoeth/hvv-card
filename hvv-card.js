@@ -123,6 +123,7 @@ class HvvCard extends LitElement {
 											html `</td>`;
 											html `<td class="narrow" style="text-align:right;">${departureInMins}</td>`;
 											break;
+									}
                                 }
                         </tr>
                         `
