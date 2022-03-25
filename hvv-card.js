@@ -66,6 +66,54 @@ class HvvCard extends LitElement {
         const today = new Date();
         const max = this._config.max ? this._config.max : 5;
         var count = 0;
+	var tmphtml = [];
+
+		stateObj.attributes['next'].map(attr => {
+                    const direction = attr['direction'];
+                    const line = attr['line'];
+                    const type = attr['type'];
+                    const delay = attr['delay'];
+                    const departure = new Date(attr["departure"]);
+		    const dept_ms = departure - today;
+		    const dept_s = dept_ms / 1000;
+		    const dept_h = Math.floor(dept_s / 3600);
+		    const dept_m = Math.round((dept_s % 3600) / 60);
+                    var departureInMins = dept_h > 0 ? dept_h + "h " : "";
+		    departureInMins += dept_m + "m";
+                    var tmprow = [];
+                    count++;
+
+                    if (count <= max) {
+			tmprow.push(html`
+                            <td class="narrow" style="text-align:center;"><span class="line ${type} ${line}">${line}</span></td>
+                            <td>${direction}</td>`);
+							switch (this._config.show) {
+								case "time":
+									tmprow.push(html`<td class="narrow" style="text-align:right;">${departure.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+									${delay > 0 ?
+										html`<span class="delay">${delay}</span> m` :
+										html``
+									}</td>`);
+									break;
+								case "difference":
+									tmprow.push(html`<td class="narrow" style="text-align:right;">${departureInMins}
+									${delay > 0 ?
+										html`<span class="delay">${delay}</span> m` :
+										html``
+									}</td>`);
+									break;
+								case "both":
+									tmprow.push(html`<td class="narrow" style="text-align:right;">${departure.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+									${delay > 0 ?
+										html`<span class="delay">${delay}</span> m` :
+										html``
+									}</td>`);
+									tmprow.push(html`<td class="narrow" style="text-align:right;">${departureInMins}</td>`);
+									break;
+                            }
+			tmphtml.push(html`<tr>${tmprow}</tr>`);
+					}
+        });
 
         return html `
         <ha-card>
@@ -78,57 +126,7 @@ class HvvCard extends LitElement {
           }
           <div>
             <table>
-                ${stateObj.attributes['next'].map(attr => {
-                    const direction = attr['direction'];
-                    const line = attr['line'];
-                    const type = attr['type'];
-                    const delay = attr['delay'];
-                    const departure = new Date(attr["departure"]);
-					const dept_ms = departure - today;
-					const dept_s = dept_ms / 1000;
-					const dept_h = Math.floor(dept_s / 3600);
-					const dept_m = Math.round((dept_s % 3600) / 60);
-                    const departureInMins = dept_h + " h " + dept_m + " m";
-
-                    count++;
-
-                    return count <= max
-                    ? html`
-                        <tr>
-                            <td class="narrow" style="text-align:center;"><span class="line ${type} ${line}">${line}</span></td>
-                            <td class="expand">${direction}</td>
-                                ${
-									switch (this._config.show) {
-										case "time":
-											html`<td class="narrow" style="text-align:right;">`;
-											departure.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-											delay > 0 ?
-												html`<span class="delay">+${delay}</span> min` :
-												html``;
-											html`</td>`;
-											break;
-										case "difference":
-											html `<td class="narrow" style="text-align:right;">${departureInMins}`
-											delay > 0 ?
-												html`<span class="delay">+${delay}</span> min` :
-												html``;
-											html`</td>`;
-											break;
-										case "both":
-											html`<td class="narrow" style="text-align:right;">`;
-											departure.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-											delay > 0 ?
-												html`<span class="delay">+${delay}</span> min` :
-												html``;
-											html `</td>`;
-											html `<td class="narrow" style="text-align:right;">${departureInMins}</td>`;
-											break;
-									}
-                                }
-                        </tr>
-                        `
-                    : html ``;
-                })}
+                ${tmphtml}
             </table>
           </div>
         </ha-card>
@@ -248,3 +246,4 @@ class HvvCard extends LitElement {
     }
 }
 customElements.define("hvv-card", HvvCard);
+
